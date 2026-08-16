@@ -7,12 +7,12 @@ Staticky postavený web pro moderní online doučování. Obsahuje sekce O nás,
 - Žádné externí skripty ani CDN.
 - Připravené CSP a bezpečnostní hlavičky v `_headers`; nejsou vložené jako meta tag, aby lokální náhled v Codexu šel anotovat.
 - Rezervační formulář nic citlivého neukládá do prohlížeče.
-- Platby by měly být později řešené přes serverem vytvořený checkout session u platebního providera.
-- Tajné klíče, webhooks a potvrzení plateb musí zůstat výhradně na backendu.
+- Platby probíhají mimo web přes Acuity Scheduling a Stripe.
+- Tajné klíče, webhooks a potvrzení plateb nesmí být uložené ve statických souborech webu.
 
-## Budoucí napojení
+## Napojení služeb
 
-Formulář posílá připravený payload přes událost `capito:reservation-ready`. Po doplnění backendu lze přidat `fetch` na `/api/reservations`, serverovou validaci, ochranu proti spamu, kalendářové sloty a platební checkout.
+Rezervační tlačítko vede do Acuity Scheduling. Nezávazná poptávka je připravená jako Netlify formulář a v lokálním náhledu posílá kontrolní událost `capito:inquiry-ready`. Platby probíhají mimo web přes Acuity a Stripe.
 
 ## SEO
 

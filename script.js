@@ -7,7 +7,6 @@ const subjectSelect = document.querySelector("[data-subject-select]");
 const subjectLinks = document.querySelectorAll("[data-subject]");
 const preparationPicker = document.querySelector("[data-preparation-picker]");
 const preparationInputs = document.querySelectorAll('input[name="preparation_subjects"]');
-const bookingPlaceholder = document.querySelector("[data-booking-placeholder]");
 
 const setHeaderState = () => {
   header?.classList.toggle("is-scrolled", window.scrollY > 10);
@@ -60,16 +59,6 @@ preparationInputs.forEach((input) => {
   });
 });
 
-bookingPlaceholder?.addEventListener("click", (event) => {
-  event.preventDefault();
-  if (!statusMessage) return;
-
-  statusMessage.textContent =
-    "Rezervační kalendář čeká na napojení. Pro domluvu zatím použijte formulář níže.";
-  statusMessage.classList.remove("is-error");
-  bookingForm?.scrollIntoView({ behavior: "smooth", block: "center" });
-});
-
 const clearInvalidState = (form) => {
   form.querySelectorAll("[aria-invalid]").forEach((field) => {
     field.removeAttribute("aria-invalid");
@@ -96,7 +85,7 @@ bookingForm?.addEventListener("submit", async (event) => {
   const honeypot = String(formData.get("website") || "").trim();
 
   if (honeypot) {
-    statusMessage.textContent = "Rezervace byla přijata.";
+    statusMessage.textContent = "Poptávka byla přijata.";
     statusMessage.classList.remove("is-error");
     bookingForm.reset();
     return;
@@ -117,7 +106,7 @@ bookingForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  const reservation = {
+  const inquiry = {
     name: String(formData.get("name") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     phone: String(formData.get("phone") || "").trim(),
@@ -135,9 +124,9 @@ bookingForm?.addEventListener("submit", async (event) => {
     statusMessage.textContent = "Formulář je připravený. Ostré odesílání poběží po publikování webu.";
     statusMessage.classList.remove("is-error");
     bookingForm.dispatchEvent(
-      new CustomEvent("capito:reservation-ready", {
+      new CustomEvent("capito:inquiry-ready", {
         bubbles: true,
-        detail: reservation,
+        detail: inquiry,
       }),
     );
     return;
@@ -158,11 +147,11 @@ bookingForm?.addEventListener("submit", async (event) => {
     }
 
     bookingForm.reset();
-    statusMessage.textContent = "Děkuji, formulář byl odeslán. Ozvu se co nejdříve.";
+    statusMessage.textContent = "Děkuji, poptávka byla odeslána. Ozveme se co nejdříve.";
     bookingForm.dispatchEvent(
-      new CustomEvent("capito:reservation-sent", {
+      new CustomEvent("capito:inquiry-sent", {
         bubbles: true,
-        detail: reservation,
+        detail: inquiry,
       }),
     );
   } catch (error) {
