@@ -2,6 +2,7 @@
 .openai/
 .agents/
 .codex/
+.netlify/
 .DS_Store
 .env
 .env.*

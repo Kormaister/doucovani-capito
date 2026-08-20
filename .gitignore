@@ -12,3 +12,6 @@ FINAL_AUDIT_*.md
 NAVAZNOST_*.md
 SEO_REPORT.md
 smlouvy/
+
+# Local Netlify folder
+.netlify
