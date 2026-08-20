@@ -32,20 +32,28 @@ nav?.addEventListener("click", (event) => {
 subjectLinks.forEach((link) => {
   link.addEventListener("click", () => {
     const subject = link.dataset.subject || "";
-    const matchingOption = subjectSelect
-      ? [...subjectSelect.options].find((option) => option.value === subject || option.textContent === subject)
-      : null;
+    const findOption = (value) =>
+      subjectSelect
+        ? [...subjectSelect.options].find((option) => option.value === value || option.textContent?.trim() === value)
+        : null;
+    const matchingOption = findOption(subject) || findOption("Jiné");
 
     if (subjectSelect && matchingOption) {
       subjectSelect.value = matchingOption.value || matchingOption.textContent;
+      subjectSelect.removeAttribute("aria-invalid");
     }
 
+    let matchedPreparation = false;
     preparationInputs.forEach((input) => {
       if (input.value === subject) {
         input.checked = true;
-        preparationPicker?.removeAttribute("aria-invalid");
+        matchedPreparation = true;
       }
     });
+
+    if (matchedPreparation) {
+      preparationPicker?.removeAttribute("aria-invalid");
+    }
   });
 });
 

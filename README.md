@@ -19,5 +19,4 @@ Rezervační tlačítko vede do Acuity Scheduling. Nezávazná poptávka je při
 - Hlavní SEO metadata jsou v `index.html`.
 - Strukturovaná data používají JSON-LD pro WebSite, Organization, LocalBusiness, Course, FAQPage a BreadcrumbList.
 - Indexaci pomáhají `robots.txt` a `sitemap.xml`.
-- Detail provedených změn a další doporučení jsou v `SEO_REPORT.md`.
 - Canonical, Open Graph, strukturovaná data, `robots.txt` a `sitemap.xml` počítají s doménou `https://www.doucovanicapito.cz/`.

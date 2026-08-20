@@ -489,7 +489,7 @@ h1 {
 
 .feature-card h3,
 .timeline h3 {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-size: 1.28rem;
 }
 
@@ -680,10 +680,10 @@ h1 {
   position: relative;
   width: min(1120px, calc(100% - 32px));
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
-  gap: clamp(30px, 6vw, 76px);
+  grid-template-columns: minmax(0, 0.66fr) minmax(520px, 1.34fr);
+  gap: clamp(24px, 4vw, 54px);
   margin: 0 auto;
-  padding: clamp(36px, 7vw, 74px);
+  padding: clamp(50px, 6.6vw, 84px) clamp(28px, 6vw, 72px);
   border-radius: var(--radius);
   color: var(--ink);
   overflow: hidden;
@@ -844,7 +844,11 @@ h1 {
 }
 
 .method-heading {
-  transform: translateY(-10px);
+  transform: translateY(-6px);
+}
+
+.method h2 {
+  font-size: clamp(2.1rem, 4.35vw, 3.85rem);
 }
 
 .method-panel p {
@@ -861,15 +865,19 @@ h1 {
 }
 
 .timeline div {
-  padding: 22px;
+  padding: 25px 20px;
   background: rgba(255, 255, 255, 0.9);
 }
 
 .timeline span {
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: var(--amber);
   font-weight: 800;
+}
+
+.timeline p {
+  line-height: 1.5;
 }
 
 .testimonials {
