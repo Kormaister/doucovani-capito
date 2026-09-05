@@ -3,6 +3,8 @@
 .env.*
 node_modules/
 dist/
+output/
+tmp/
 *.log
 .openai/
 .agents/

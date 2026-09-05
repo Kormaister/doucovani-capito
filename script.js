@@ -6,7 +6,10 @@ const statusMessage = document.querySelector("[data-form-status]");
 const subjectSelect = document.querySelector("[data-subject-select]");
 const subjectLinks = document.querySelectorAll("[data-subject]");
 const preparationPicker = document.querySelector("[data-preparation-picker]");
-const preparationInputs = document.querySelectorAll('input[name="preparation_subjects"]');
+const preparationInputs = document.querySelectorAll('input[name="subjects"]');
+const reviewsMarquee = document.querySelector(".reviews-marquee");
+const primaryReviewsRow = document.querySelector('.reviews-row:not([aria-hidden="true"])');
+const reviewCards = primaryReviewsRow ? [...primaryReviewsRow.querySelectorAll(".review-card")] : [];
 
 const setHeaderState = () => {
   header?.classList.toggle("is-scrolled", window.scrollY > 10);
@@ -15,19 +18,311 @@ const setHeaderState = () => {
 setHeaderState();
 window.addEventListener("scroll", setHeaderState, { passive: true });
 
+const mobileMenuQuery = window.matchMedia("(max-width: 900px)");
+const navLinks = nav ? [...nav.querySelectorAll("a")] : [];
+
+const setMenuA11yState = (isOpen) => {
+  if (!nav) return;
+
+  const shouldHideLinks = mobileMenuQuery.matches && !isOpen;
+  nav.setAttribute("aria-hidden", String(shouldHideLinks));
+  nav.inert = shouldHideLinks;
+  navLinks.forEach((link) => {
+    if (shouldHideLinks) {
+      link.setAttribute("tabindex", "-1");
+    } else {
+      link.removeAttribute("tabindex");
+    }
+  });
+};
+
+const setMenuState = (isOpen, options = {}) => {
+  menuToggle?.setAttribute("aria-expanded", String(isOpen));
+  nav?.classList.toggle("is-open", isOpen);
+  document.body.classList.toggle("menu-open", isOpen);
+  setMenuA11yState(isOpen);
+
+  if (!isOpen && options.focusToggle) {
+    menuToggle?.focus();
+  }
+};
+
+setMenuState(false);
+
 menuToggle?.addEventListener("click", () => {
   const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
-  menuToggle.setAttribute("aria-expanded", String(!isOpen));
-  nav?.classList.toggle("is-open", !isOpen);
-  document.body.classList.toggle("menu-open", !isOpen);
+  setMenuState(!isOpen);
 });
 
 nav?.addEventListener("click", (event) => {
   if (!(event.target instanceof HTMLAnchorElement)) return;
-  menuToggle?.setAttribute("aria-expanded", "false");
-  nav.classList.remove("is-open");
-  document.body.classList.remove("menu-open");
+  setMenuState(false);
 });
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || menuToggle?.getAttribute("aria-expanded") !== "true") return;
+  setMenuState(false, { focusToggle: true });
+});
+
+const handleMobileMenuChange = () => setMenuState(false);
+if (typeof mobileMenuQuery.addEventListener === "function") {
+  mobileMenuQuery.addEventListener("change", handleMobileMenuChange);
+} else if (typeof mobileMenuQuery.addListener === "function") {
+  mobileMenuQuery.addListener(handleMobileMenuChange);
+}
+
+const updateActiveReview = () => {
+  if (!reviewsMarquee || !reviewCards.length) return;
+
+  const isMobileCarousel = window.matchMedia("(max-width: 640px)").matches;
+  if (!isMobileCarousel) {
+    reviewCards.forEach((card) => card.classList.remove("is-active"));
+    return;
+  }
+
+  const marqueeBox = reviewsMarquee.getBoundingClientRect();
+  const marqueeCenter = marqueeBox.left + marqueeBox.width / 2;
+  let closestCard = reviewCards[0];
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  reviewCards.forEach((card) => {
+    const cardBox = card.getBoundingClientRect();
+    const cardCenter = cardBox.left + cardBox.width / 2;
+    const distance = Math.abs(cardCenter - marqueeCenter);
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestCard = card;
+    }
+  });
+
+  reviewCards.forEach((card) => card.classList.toggle("is-active", card === closestCard));
+};
+
+let reviewFrame = 0;
+const requestReviewUpdate = () => {
+  cancelAnimationFrame(reviewFrame);
+  reviewFrame = requestAnimationFrame(updateActiveReview);
+};
+
+reviewsMarquee?.addEventListener("scroll", requestReviewUpdate, { passive: true });
+window.addEventListener("resize", requestReviewUpdate);
+requestReviewUpdate();
+
+const currentTopicBanner = document.querySelector("[data-current-topic-banner]");
+
+const normalizeSheetKey = (value) =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+
+const sheetHeaderMap = {
+  aktivni: "active",
+  predmet: "subject",
+  poradi: "order",
+  stitek: "label",
+  "tema lekce": "title",
+  "popis v banneru": "description",
+  termin: "date",
+  cas: "time",
+  delka: "duration",
+  "vhodne pro": "audience",
+  "doplnujici text": "note",
+  "odkaz na rezervaci": "bookingUrl",
+};
+
+const getSheetCellValue = (cell) => {
+  if (!cell) return "";
+  return String(cell.f ?? cell.v ?? "").trim();
+};
+
+const getCurrentTopicRows = (response) => {
+  const table = response?.table;
+  if (!table?.rows?.length) return [];
+
+  let headers = table.cols.map((column) => column.label || column.id || "");
+  const rows = table.rows.map((row) => row.c.map(getSheetCellValue));
+
+  if (headers.every((header) => !String(header).trim())) {
+    headers = rows.shift() || [];
+  }
+
+  const keys = headers.map((header) => sheetHeaderMap[normalizeSheetKey(header)] || "");
+
+  return rows.map((row) =>
+    row.reduce((topic, value, index) => {
+      const key = keys[index];
+      if (key) topic[key] = value;
+      return topic;
+    }, {}),
+  );
+};
+
+const isCurrentTopicActive = (value) => {
+  const normalized = normalizeSheetKey(value);
+  return !["ne", "no", "false", "0", "vypnuto", "skryto", "skryt"].includes(normalized);
+};
+
+const setCurrentTopicText = (card, selector, value) => {
+  const element = card.querySelector(selector);
+  if (!element || !value) return;
+  element.textContent = value;
+};
+
+const setCurrentTopicMeta = (card, selector, value) => {
+  const element = card.querySelector(selector);
+  if (!element) return;
+
+  element.hidden = !value;
+  if (value) {
+    element.textContent = value;
+  }
+
+  const metaList = element.closest(".current-topic-meta");
+  if (metaList) {
+    metaList.hidden = !metaList.querySelector("li:not([hidden])");
+  }
+};
+
+const setCurrentTopicBooking = (card, topic, subject) => {
+  const link = card.querySelector("[data-current-topic-booking]");
+  if (!link) return;
+
+  if (topic.bookingUrl) {
+    try {
+      const url = new URL(topic.bookingUrl, window.location.href);
+      if (url.protocol === "https:" || url.protocol === "http:") {
+        link.href = url.href;
+      }
+    } catch (error) {
+      return;
+    }
+  }
+
+  const audience = topic.audience ? ` pro ${topic.audience}` : "";
+  link.setAttribute("aria-label", `Rezervovat místo na skupinové lekci ${subject}${audience}`);
+};
+
+const renderCurrentTopicCard = (card, topic, index, section) => {
+  const subject = section.dataset.currentTopicSubjectLabel || section.dataset.currentTopicSubject || "mechaniky";
+  const titleId = index === 0 ? "current-topic-title" : `current-topic-title-${index + 1}`;
+  const title = card.querySelector("[data-current-topic-title]");
+
+  if (title) {
+    title.id = titleId;
+  }
+
+  if (index === 0) {
+    section.setAttribute("aria-labelledby", titleId);
+  }
+
+  card.dataset.currentTopicOrder = topic.order || String(index + 1);
+  card.hidden = false;
+
+  setCurrentTopicText(card, "[data-current-topic-label]", topic.label);
+  setCurrentTopicText(card, "[data-current-topic-title]", topic.title);
+  setCurrentTopicText(card, "[data-current-topic-description]", topic.description);
+  setCurrentTopicMeta(card, "[data-current-topic-date]", topic.date);
+  setCurrentTopicMeta(card, "[data-current-topic-time]", topic.time);
+  setCurrentTopicMeta(card, "[data-current-topic-duration]", topic.duration);
+  setCurrentTopicText(card, "[data-current-topic-audience]", topic.audience);
+  setCurrentTopicText(card, "[data-current-topic-note]", topic.note);
+  setCurrentTopicBooking(card, topic, subject);
+};
+
+const renderCurrentTopics = (section, topics) => {
+  const subject = normalizeSheetKey(section.dataset.currentTopicSubject);
+  const activeTopics = topics
+    .filter((topic) => isCurrentTopicActive(topic.active))
+    .filter((topic) => !subject || normalizeSheetKey(topic.subject) === subject)
+    .sort((a, b) => Number(a.order || 0) - Number(b.order || 0));
+
+  if (!activeTopics.length) {
+    section.hidden = true;
+    return;
+  }
+
+  section.hidden = false;
+
+  const cards = [...section.querySelectorAll("[data-current-topic-card]")];
+  const template = cards[0];
+
+  if (!template) return;
+
+  activeTopics.forEach((topic, index) => {
+    const card = cards[index] || template.cloneNode(true);
+
+    if (!cards[index]) {
+      section.append(card);
+      cards.push(card);
+    }
+
+    renderCurrentTopicCard(card, topic, index, section);
+  });
+
+  cards.slice(activeTopics.length).forEach((card) => {
+    card.hidden = true;
+  });
+};
+
+const loadCurrentTopicSheet = (section) =>
+  new Promise((resolve, reject) => {
+    const sheetId = section.dataset.currentTopicSheetId;
+    const sheetGid = section.dataset.currentTopicSheetGid || "0";
+
+    if (!sheetId) {
+      reject(new Error("Missing Google Sheet ID."));
+      return;
+    }
+
+    const callbackName = `capitoCurrentTopics${Date.now()}${Math.round(Math.random() * 100000)}`;
+    const script = document.createElement("script");
+    const url = new URL(`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq`);
+    const cleanup = () => {
+      delete window[callbackName];
+      script.remove();
+      window.clearTimeout(timeout);
+    };
+
+    const timeout = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Google Sheet did not respond."));
+    }, 8000);
+
+    window[callbackName] = (response) => {
+      cleanup();
+
+      if (response?.status === "error") {
+        reject(new Error(response.errors?.[0]?.message || "Google Sheet returned an error."));
+        return;
+      }
+
+      resolve(getCurrentTopicRows(response));
+    };
+
+    script.onerror = () => {
+      cleanup();
+      reject(new Error("Google Sheet script could not be loaded."));
+    };
+
+    url.searchParams.set("gid", sheetGid);
+    url.searchParams.set("headers", "1");
+    url.searchParams.set("tqx", `out:json;responseHandler:${callbackName}`);
+
+    script.src = url.href;
+    script.async = true;
+    document.head.append(script);
+  });
+
+if (currentTopicBanner) {
+  loadCurrentTopicSheet(currentTopicBanner)
+    .then((topics) => renderCurrentTopics(currentTopicBanner, topics))
+    .catch((error) => {
+      console.info("Bannery skupinových lekcí zůstaly v záložní verzi.", error);
+    });
+}
 
 subjectLinks.forEach((link) => {
   link.addEventListener("click", () => {
@@ -36,7 +331,7 @@ subjectLinks.forEach((link) => {
       subjectSelect
         ? [...subjectSelect.options].find((option) => option.value === value || option.textContent?.trim() === value)
         : null;
-    const matchingOption = findOption(subject) || findOption("Jiné");
+    const matchingOption = findOption(subject) || findOption("Nejsem si jistý/á");
 
     if (subjectSelect && matchingOption) {
       subjectSelect.value = matchingOption.value || matchingOption.textContent;
@@ -108,7 +403,7 @@ bookingForm?.addEventListener("submit", async (event) => {
 
   if (!hasPreparationSubject()) {
     preparationPicker?.setAttribute("aria-invalid", "true");
-    statusMessage.textContent = "Vyberte prosím alespoň jeden předmět přípravy.";
+    statusMessage.textContent = "Vyberte prosím alespoň jeden předmět.";
     statusMessage.classList.add("is-error");
     preparationInputs[0]?.focus();
     return;
@@ -118,8 +413,9 @@ bookingForm?.addEventListener("submit", async (event) => {
     name: String(formData.get("name") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     phone: String(formData.get("phone") || "").trim(),
-    lessonType: String(formData.get("subject") || ""),
-    preparationSubjects: formData.getAll("preparation_subjects").map((subject) => String(subject)),
+    lessonType: String(formData.get("lesson_type") || ""),
+    subjects: formData.getAll("subjects").map((subject) => String(subject)),
+    message: String(formData.get("message") || "").trim(),
   };
 
   const isLocalPreview =

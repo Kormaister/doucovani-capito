@@ -8,6 +8,8 @@
 .env.*
 node_modules/
 dist/
+output/
+tmp/
 *.log
 README.md
 SEO_REPORT.md
