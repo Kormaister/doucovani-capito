@@ -27,6 +27,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 [id] {
@@ -35,6 +37,8 @@ html {
 
 body {
   margin: 0;
+  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--paper);
   color: var(--ink);
   font-size: 16px;
@@ -207,7 +211,7 @@ select {
 .hero-content {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 132px 0 72px;
+  padding: 112px 0 72px;
 }
 
 .eyebrow,
@@ -419,6 +423,10 @@ h1 {
   scroll-margin-top: 110px;
 }
 
+#kontakt {
+  scroll-margin-top: 64px;
+}
+
 .offer-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -468,26 +476,6 @@ h1 {
   font-weight: 800;
 }
 
-.feature-card:nth-child(1) .icon {
-  background: var(--amber);
-}
-
-.feature-card:nth-child(2) .icon {
-  background: var(--teal);
-}
-
-.feature-card:nth-child(4) .icon {
-  background: var(--sage);
-}
-
-.feature-card:nth-child(5) .icon {
-  background: var(--ink);
-}
-
-.feature-card:nth-child(6) .icon {
-  background: var(--teal-dark);
-}
-
 .feature-card h3,
 .timeline h3 {
   margin: 0 0 8px;
@@ -524,8 +512,69 @@ h1 {
   padding-top: 5px;
 }
 
+.feature-card--preparation {
+  background: rgba(221, 139, 22, 0.18);
+}
+
 .feature-card-cta::after {
   content: "→";
+}
+
+@media (min-width: 901px) {
+  .feature-card {
+    min-height: 174px;
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr auto;
+    column-gap: 12px;
+    padding: 9px 12px;
+  }
+
+  .feature-card .icon {
+    grid-column: 1;
+    grid-row: 1;
+    width: 38px;
+    height: 38px;
+    margin: 0;
+  }
+
+  .feature-card h3 {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin: 0;
+    font-size: 1.12rem;
+  }
+
+  .feature-card p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 5px;
+    font-size: 0.93rem;
+    line-height: 1.35;
+  }
+
+  .feature-card-cta {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    align-self: end;
+    margin-top: 0;
+    padding-top: 3px;
+    font-size: 0.95rem;
+  }
+
+  .feature-card-badge {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    align-self: end;
+    margin-top: 4px;
+    font-size: 0.72rem;
+  }
+
+  .offer-grid {
+    gap: 10px;
+    margin-top: 24px;
+  }
 }
 
 .packages {
@@ -534,9 +583,6 @@ h1 {
 
 .package-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  width: min(100%, 1060px);
-  max-width: 1060px;
-  margin-inline: auto;
 }
 
 .package-card {
@@ -718,7 +764,7 @@ h1 {
   grid-template-columns: minmax(0, 0.66fr) minmax(520px, 1.34fr);
   gap: clamp(24px, 4vw, 54px);
   margin: 0 auto;
-  padding: clamp(50px, 6.6vw, 84px) clamp(28px, 6vw, 72px);
+  padding: clamp(42px, 5.3vw, 64px) clamp(28px, 6vw, 72px);
   border-radius: var(--radius);
   color: var(--ink);
   overflow: hidden;
@@ -943,6 +989,10 @@ h1 {
   gap: 14px;
 }
 
+.reviews-pagination {
+  display: none;
+}
+
 .review-card {
   width: clamp(270px, 28vw, 360px);
   flex: 0 0 clamp(270px, 28vw, 360px);
@@ -1059,7 +1109,8 @@ h1 {
 }
 
 .price-card {
-  min-height: 430px;
+  min-height: 444px;
+  padding-block: 18px;
 }
 
 .price-card:hover,
@@ -1131,6 +1182,12 @@ h1 {
   column-gap: clamp(44px, 7vw, 92px);
 }
 
+.reservation > *,
+.reservation-action > *,
+.form-grid > label {
+  min-width: 0;
+}
+
 .reservation-copy {
   display: flex;
   flex-direction: column;
@@ -1182,7 +1239,7 @@ h1 {
   color: var(--muted);
   font-size: 0.94rem;
   line-height: 1.35;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .booking-service-button {
@@ -1238,8 +1295,8 @@ h1 {
   overflow: hidden;
   display: grid;
   width: 100%;
-  gap: 9px;
-  padding: clamp(16px, 2vw, 22px);
+  gap: 10px;
+  padding: clamp(18px, 2.1vw, 23px);
   border: 1px solid rgba(0, 109, 119, 0.16);
   border-radius: var(--radius);
   background:
@@ -1253,8 +1310,8 @@ h1 {
 .form-heading {
   display: grid;
   justify-items: center;
-  gap: 2px;
-  margin-bottom: 0;
+  gap: 4px;
+  margin-bottom: 2px;
   text-align: center;
 }
 
@@ -1293,12 +1350,12 @@ h1 {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 12px;
+  gap: 10px 14px;
 }
 
 label {
   display: grid;
-  gap: 5px;
+  gap: 6px;
   color: rgba(17, 19, 18, 0.76);
   font-size: 0.9rem;
   font-weight: 780;
@@ -1320,6 +1377,7 @@ input,
 select,
 textarea {
   width: 100%;
+  min-width: 0;
   border: 1px solid rgba(17, 19, 18, 0.13);
   border-radius: var(--radius);
   background: rgba(255, 255, 255, 0.86);
@@ -1331,13 +1389,13 @@ textarea {
 
 input,
 select {
-  min-height: 38px;
+  min-height: 42px;
   padding: 0 12px;
 }
 
 textarea {
-  height: 72px;
-  min-height: 72px;
+  height: 80px;
+  min-height: 80px;
   resize: none;
   padding: 8px 12px;
   line-height: 1.28;
@@ -1373,88 +1431,6 @@ select[aria-invalid="true"],
 textarea[aria-invalid="true"] {
   border-color: #b42318;
   box-shadow: 0 0 0 4px rgba(180, 35, 24, 0.1);
-}
-
-.day-picker {
-  display: grid;
-  grid-column: 1 / -1;
-  gap: 6px;
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.day-picker legend {
-  padding: 0;
-  color: rgba(17, 19, 18, 0.76);
-  font-size: 0.9rem;
-  font-weight: 780;
-}
-
-.day-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.preparation-picker {
-  justify-items: center;
-  text-align: center;
-}
-
-.preparation-picker legend {
-  margin-bottom: 5px;
-}
-
-.preparation-picker .day-options {
-  justify-content: center;
-}
-
-.day-options label {
-  display: inline-flex;
-  gap: 0;
-  min-width: 0;
-  cursor: pointer;
-}
-
-.day-options input {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.day-options span {
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 14px;
-  border: 1px solid rgba(17, 19, 18, 0.13);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: rgba(17, 19, 18, 0.78);
-  font-size: 0.9rem;
-  font-weight: 760;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
-}
-
-.day-options input:checked + span {
-  border-color: rgba(0, 109, 119, 0.78);
-  background: rgba(0, 109, 119, 0.18);
-  color: var(--teal-dark);
-  box-shadow: 0 10px 26px rgba(0, 109, 119, 0.18);
-}
-
-.day-options input:focus-visible + span {
-  outline: 3px solid rgba(0, 109, 119, 0.2);
-  outline-offset: 2px;
-}
-
-.day-picker[aria-invalid="true"] .day-options span {
-  border-color: rgba(180, 35, 24, 0.34);
 }
 
 .consent {
@@ -1508,7 +1484,7 @@ textarea[aria-invalid="true"] {
 }
 
 .booking-form .button {
-  min-height: 44px;
+  min-height: 46px;
   margin-top: 0;
   box-shadow: 0 18px 38px rgba(17, 19, 18, 0.24);
 }
@@ -1540,7 +1516,7 @@ textarea[aria-invalid="true"] {
 }
 
 .contact {
-  padding-top: 96px;
+  padding-top: 72px;
   padding-bottom: 104px;
 }
 
@@ -1707,6 +1683,10 @@ textarea[aria-invalid="true"] {
 
 .landing-page #rezervace {
   scroll-margin-top: 130px;
+}
+
+.marketing-management-page #rezervace {
+  scroll-margin-top: 100px;
 }
 
 .landing-hero {
@@ -2329,7 +2309,14 @@ textarea[aria-invalid="true"] {
 
 .site-footer div {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
+}
+
+.site-footer > * {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .footer-legal {
@@ -2338,16 +2325,11 @@ textarea[aria-invalid="true"] {
   font-size: 0.9rem;
 }
 
-.site-footer div .footer-legal:first-of-type {
-  white-space: nowrap;
-}
-
 .footer-ai {
   max-width: none;
   margin-top: 15px;
   font-size: 0.78rem;
   line-height: 1.25;
-  white-space: nowrap;
 }
 
 .site-footer nav {
@@ -2386,6 +2368,7 @@ textarea[aria-invalid="true"] {
   .site-footer nav {
     transform: translateY(-6px);
   }
+
 }
 
 .site-footer a {
@@ -2398,6 +2381,15 @@ textarea[aria-invalid="true"] {
 }
 
 @media (max-width: 900px) {
+  body.menu-open::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 19;
+    background: rgba(17, 19, 18, 0.28);
+    backdrop-filter: blur(2px);
+  }
+
   .site-header {
     top: 8px;
   }
@@ -2416,13 +2408,16 @@ textarea[aria-invalid="true"] {
     position: fixed;
     top: 68px;
     right: 12px;
-    left: 12px;
+    left: auto;
+    width: min(360px, calc(100% - 24px));
     display: grid;
-    gap: 8px;
-    padding: 12px;
+    align-items: stretch;
+    justify-content: stretch;
+    gap: 4px;
+    padding: 10px;
     border: 1px solid rgba(255, 255, 255, 0.78);
     border-radius: var(--radius);
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.98);
     box-shadow: var(--shadow);
     max-height: calc(100svh - 84px);
     overflow-y: auto;
@@ -2446,6 +2441,25 @@ textarea[aria-invalid="true"] {
   .site-nav a {
     min-height: 44px;
     justify-content: center;
+    font-size: 1rem;
+    font-weight: 650;
+  }
+
+  .site-nav a[aria-current="page"] {
+    background: rgba(17, 19, 18, 0.08);
+    color: var(--ink);
+  }
+
+  .site-nav a[href$="#rezervace"] {
+    color: #fff;
+    background: var(--ink);
+    font-weight: 760;
+  }
+
+  .site-nav a[href$="#rezervace"]:hover,
+  .site-nav a[href$="#rezervace"]:focus-visible {
+    color: #fff;
+    background: var(--teal-dark);
   }
 
   .menu-toggle[aria-expanded="true"] span:nth-child(2) {
@@ -2467,7 +2481,7 @@ textarea[aria-invalid="true"] {
   }
 
   .hero-content {
-    padding: 116px 0 48px;
+    padding: 96px 0 48px;
   }
 
   .signal-strip,
@@ -2482,7 +2496,7 @@ textarea[aria-invalid="true"] {
   .current-topic-card,
   .landing-split,
   .landing-cta {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .current-topic-side {
@@ -2498,20 +2512,13 @@ textarea[aria-invalid="true"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-}
-
-@media (max-width: 640px) {
-  .hero-media {
-    object-position: 66% center;
-  }
-
-  .hero-actions,
   .site-footer {
     align-items: stretch;
     flex-direction: column;
   }
 
   .site-footer nav {
+    margin-left: 0;
     transform: none;
     justify-content: flex-start;
     text-align: left;
@@ -2523,12 +2530,16 @@ textarea[aria-invalid="true"] {
     justify-content: flex-start;
   }
 
-  .footer-ai {
-    white-space: normal;
+}
+
+@media (max-width: 640px) {
+  .hero-media {
+    object-position: 66% center;
   }
 
-  .site-footer div .footer-legal:first-of-type {
-    white-space: normal;
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .button {
@@ -2560,6 +2571,43 @@ textarea[aria-invalid="true"] {
 
   .reviews-marquee::-webkit-scrollbar {
     display: none;
+  }
+
+  .reviews-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 4px;
+  }
+
+  .review-dot {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .review-dot::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #b7bab7;
+    transition: background-color 180ms ease;
+  }
+
+  .review-dot[aria-current="true"]::before {
+    background: #111312;
+  }
+
+  .review-dot:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -6px;
   }
 
   .reviews-track {
@@ -2612,6 +2660,52 @@ textarea[aria-invalid="true"] {
   .price-card,
   .package-card {
     min-height: auto;
+  }
+
+  .feature-card {
+    display: grid;
+    grid-template-columns: 38px minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    column-gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .feature-card .icon {
+    grid-column: 1;
+    grid-row: 1;
+    width: 38px;
+    height: 38px;
+    margin: 0;
+  }
+
+  .feature-card h3 {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    margin: 0;
+  }
+
+  .feature-card p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 6px;
+  }
+
+  .feature-card-badge {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 8px;
+  }
+
+  .feature-card-cta {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    margin-top: 0;
+    padding-top: 6px;
+  }
+
+  .feature-card-badge + .feature-card-cta {
+    padding-top: 5px;
   }
 
   .method-panel {
@@ -2691,7 +2785,7 @@ textarea[aria-invalid="true"] {
 
 @media (min-width: 900px) {
   .package-card {
-    min-height: clamp(414px, 34vw, 432px) !important;
-    padding-block: clamp(22px, 2.6vw, 31px) !important;
+    min-height: clamp(438px, 33.4vw, 456px) !important;
+    padding-block: clamp(22px, 2.5vw, 30px) !important;
   }
 }

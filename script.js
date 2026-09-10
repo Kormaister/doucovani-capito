@@ -5,11 +5,37 @@ const bookingForm = document.querySelector("[data-booking-form]");
 const statusMessage = document.querySelector("[data-form-status]");
 const subjectSelect = document.querySelector("[data-subject-select]");
 const subjectLinks = document.querySelectorAll("[data-subject]");
-const preparationPicker = document.querySelector("[data-preparation-picker]");
-const preparationInputs = document.querySelectorAll('input[name="subjects"]');
 const reviewsMarquee = document.querySelector(".reviews-marquee");
 const primaryReviewsRow = document.querySelector('.reviews-row:not([aria-hidden="true"])');
 const reviewCards = primaryReviewsRow ? [...primaryReviewsRow.querySelectorAll(".review-card")] : [];
+const reviewDots = [];
+
+if (reviewsMarquee && reviewCards.length > 1) {
+  const pagination = document.createElement("div");
+  pagination.className = "reviews-pagination";
+  pagination.setAttribute("role", "group");
+  pagination.setAttribute("aria-label", "Výběr reference");
+
+  reviewCards.forEach((card, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "review-dot";
+    dot.setAttribute("aria-label", `Zobrazit referenci ${index + 1} z ${reviewCards.length}`);
+    dot.addEventListener("click", () => {
+      const cardBox = card.getBoundingClientRect();
+      const marqueeBox = reviewsMarquee.getBoundingClientRect();
+      reviewsMarquee.scrollTo({
+        left: reviewsMarquee.scrollLeft + cardBox.left + cardBox.width / 2
+          - marqueeBox.left - marqueeBox.width / 2,
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      });
+    });
+    reviewDots.push(dot);
+    pagination.append(dot);
+  });
+
+  reviewsMarquee.after(pagination);
+}
 
 const setHeaderState = () => {
   header?.classList.toggle("is-scrolled", window.scrollY > 10);
@@ -20,6 +46,7 @@ window.addEventListener("scroll", setHeaderState, { passive: true });
 
 const mobileMenuQuery = window.matchMedia("(max-width: 900px)");
 const navLinks = nav ? [...nav.querySelectorAll("a")] : [];
+const menuLabel = menuToggle?.querySelector(".sr-only");
 
 const setMenuA11yState = (isOpen) => {
   if (!nav) return;
@@ -38,9 +65,14 @@ const setMenuA11yState = (isOpen) => {
 
 const setMenuState = (isOpen, options = {}) => {
   menuToggle?.setAttribute("aria-expanded", String(isOpen));
+  if (menuLabel) menuLabel.textContent = isOpen ? "Zavřít menu" : "Menu";
   nav?.classList.toggle("is-open", isOpen);
   document.body.classList.toggle("menu-open", isOpen);
   setMenuA11yState(isOpen);
+
+  if (isOpen && options.focusFirst) {
+    navLinks[0]?.focus();
+  }
 
   if (!isOpen && options.focusToggle) {
     menuToggle?.focus();
@@ -51,7 +83,7 @@ setMenuState(false);
 
 menuToggle?.addEventListener("click", () => {
   const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
-  setMenuState(!isOpen);
+  setMenuState(!isOpen, { focusFirst: !isOpen });
 });
 
 nav?.addEventListener("click", (event) => {
@@ -59,9 +91,32 @@ nav?.addEventListener("click", (event) => {
   setMenuState(false);
 });
 
+document.addEventListener("pointerdown", (event) => {
+  if (menuToggle?.getAttribute("aria-expanded") !== "true" || header?.contains(event.target)) return;
+  setMenuState(false);
+});
+
 document.addEventListener("keydown", (event) => {
-  if (event.key !== "Escape" || menuToggle?.getAttribute("aria-expanded") !== "true") return;
-  setMenuState(false, { focusToggle: true });
+  if (menuToggle?.getAttribute("aria-expanded") !== "true") return;
+
+  if (event.key === "Escape") {
+    setMenuState(false, { focusToggle: true });
+    return;
+  }
+
+  if (event.key !== "Tab") return;
+
+  const focusableMenuItems = [menuToggle, ...navLinks].filter(Boolean);
+  const firstItem = focusableMenuItems[0];
+  const lastItem = focusableMenuItems.at(-1);
+
+  if (event.shiftKey && document.activeElement === firstItem) {
+    event.preventDefault();
+    lastItem?.focus();
+  } else if (!event.shiftKey && document.activeElement === lastItem) {
+    event.preventDefault();
+    firstItem?.focus();
+  }
 });
 
 const handleMobileMenuChange = () => setMenuState(false);
@@ -97,6 +152,13 @@ const updateActiveReview = () => {
   });
 
   reviewCards.forEach((card) => card.classList.toggle("is-active", card === closestCard));
+  reviewDots.forEach((dot, index) => {
+    if (reviewCards[index] === closestCard) {
+      dot.setAttribute("aria-current", "true");
+    } else {
+      dot.removeAttribute("aria-current");
+    }
+  });
 };
 
 let reviewFrame = 0;
@@ -338,27 +400,6 @@ subjectLinks.forEach((link) => {
       subjectSelect.removeAttribute("aria-invalid");
     }
 
-    let matchedPreparation = false;
-    preparationInputs.forEach((input) => {
-      if (input.value === subject) {
-        input.checked = true;
-        matchedPreparation = true;
-      }
-    });
-
-    if (matchedPreparation) {
-      preparationPicker?.removeAttribute("aria-invalid");
-    }
-  });
-});
-
-const hasPreparationSubject = () => [...preparationInputs].some((input) => input.checked);
-
-preparationInputs.forEach((input) => {
-  input.addEventListener("change", () => {
-    if (hasPreparationSubject()) {
-      preparationPicker?.removeAttribute("aria-invalid");
-    }
   });
 });
 
@@ -366,7 +407,6 @@ const clearInvalidState = (form) => {
   form.querySelectorAll("[aria-invalid]").forEach((field) => {
     field.removeAttribute("aria-invalid");
   });
-  preparationPicker?.removeAttribute("aria-invalid");
 };
 
 const markInvalidFields = (form) => {
@@ -401,20 +441,11 @@ bookingForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  if (!hasPreparationSubject()) {
-    preparationPicker?.setAttribute("aria-invalid", "true");
-    statusMessage.textContent = "Vyberte prosím alespoň jeden předmět.";
-    statusMessage.classList.add("is-error");
-    preparationInputs[0]?.focus();
-    return;
-  }
-
   const inquiry = {
     name: String(formData.get("name") || "").trim(),
     email: String(formData.get("email") || "").trim(),
     phone: String(formData.get("phone") || "").trim(),
     lessonType: String(formData.get("lesson_type") || ""),
-    subjects: formData.getAll("subjects").map((subject) => String(subject)),
     message: String(formData.get("message") || "").trim(),
   };
 
